@@ -15,7 +15,8 @@ amount of RPM, a little bit of time is required.
 This demo will show how to use Vagrant to set up a complete demo environment
 include an Identity Management (IdM) Service and a few clients using the service.
 
-You will see how to provision an Atomic Host and enroll it with the IdM service,
+You will see how to provision Atomic Hosts and enroll it with the IdM service,
+this will utilize http://kubernetes.io/v1.1/docs/admin/daemons.html[Kubernetes DaemonSets]. Additionally you will learn
 how to provision OpenShift Origin and use LDAP as a backend for groups.
 
 Web User Interfaces for all three virtual machines, IdM service and OpenShift
@@ -28,7 +29,7 @@ The main tool within this demo is vagrant, it will be used to spin up a set
 of hosts, all are based on Fedora 23:
 
 1. idm-1 - an Identity Management service
-2. atomic-host-1 - a client, which will be enrolled during the course of the demo
+2. atomic-host-* - clients, which will be enrolled during the course of the demo
 3. oso-1 - an all in one installation of OpenShift Origin, it is configured to use the IdM service
 
 After preparing the demo, you will be able to have a look at

@@ -1,6 +1,11 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+clients = { 'atomic-host-1' => '192.168.1.44',
+            'atomic-host-2' => '192.168.1.45',
+            'atomic-host-3' => '192.168.1.46'
+          }
+
 Vagrant.configure(2) do |config|
   # check if the hostmanager plugin is installed
   unless Vagrant.has_plugin?("vagrant-hostmanager")
@@ -15,7 +20,7 @@ Vagrant.configure(2) do |config|
 
   # set some sane defaults for all VMs
   config.vm.provider :libvirt do |domain|
-    domain.memory = 2048
+    domain.memory = 1024
     domain.cpus = 2
   end
 
@@ -36,15 +41,18 @@ Vagrant.configure(2) do |config|
 
   end
 
-  # provision and enroll an Atomic Host
-  config.vm.define "atomic-host-1" do |atomichost1|
-    atomichost1.vm.box = "fedora/23-atomic-host"
-    atomichost1.vm.box_check_update = false
-    atomichost1.vm.hostname = "atomic-host-1.goern.example.com"
+  # provision and enroll Atomic Hosts
+  clients.each do |atomic_host, atomic_host_ip_addr|
+    config.vm.define atomic_host do |this_atomic_host|
+      this_atomic_host.vm.box = "fedora/23-atomic-host"
+      this_atomic_host.vm.box_check_update = false
+      this_atomic_host.vm.hostname = "#{atomic_host}.goern.example.com"
+      this_atomic_host.vm.network "private_network", ip: atomic_host_ip_addr
 
-    atomichost1.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
+      this_atomic_host.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 
-    atomichost1.vm.provision "shell", inline: "atomic install sssd --password barbazbar"
+#      this_atomic_host.vm.provision "shell", inline: "atomic install sssd --password barbazbar"
+    end
   end
 
   # provision an OpenShift Origin host, basically recycled from https://www.openshift.org/vm/
