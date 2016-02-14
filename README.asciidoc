@@ -10,6 +10,8 @@ https://github.com/smdahlen/vagrant-hostmanager[hostmanager] must be installed t
 WARNING: initial provisioning of the IdM server will install a significant
 amount of RPM, a little bit of time is required.
 
+10GiB of free RAM and a little bit of disk space should be available.
+
 == Objectives
 
 This demo will show how to use Vagrant to set up a complete demo environment
@@ -22,6 +24,10 @@ how to provision OpenShift Origin and use LDAP as a backend for groups.
 Web User Interfaces for all three virtual machines, IdM service and OpenShift
 Origin will be available and give an impression of the usability of the whole
 environment.
+
+== Installation
+
+To use this demo, simple recursively clone the github repositoy at https://github.com/goern/idm-lab .
 
 == Usage
 
@@ -58,4 +64,21 @@ When browsing the list of hosts known by IdM you will notice that only
 `idm-1.goern.example.com` is currently available. This will change after the
 next step has finished.
 
+TIP: To gain some extra bonus, you could use ansible to deploy some standard
+roles to the IdM server: `cd idm-server ; less README.asciidoc`.
+
 === provision and enroll an Atomic Host
+
+The next step is to provision three Atomic Hosts and form one cluster out of
+these hosts.
+
+After using
+
+[source,bash]
+vagrant up --no-parallel atomic-host-{1,2,3}
+
+three Atomic Hosts are ready to use.
+
+TIP: If you want to upgrade them to the most current version of Fedora 23
+Atomic Host, use `sudo atomic host upgrade`, this will pull down the latest
+bits for you.
