@@ -7,6 +7,8 @@ clients = { 'atomic-host-1' => '192.168.1.44',
           }
 
 Vagrant.configure(2) do |config|
+  config.ssh.insert_key = false
+
   # check if the hostmanager plugin is installed
   unless Vagrant.has_plugin?("vagrant-hostmanager")
     raise 'vagrant-hostmanager is not installed! see https://github.com/smdahlen/vagrant-hostmanager'
@@ -20,7 +22,7 @@ Vagrant.configure(2) do |config|
 
   # set some sane defaults for all VMs
   config.vm.provider :libvirt do |domain|
-    domain.memory = 1024
+    domain.memory = 2048
     domain.cpus = 2
   end
 
@@ -29,16 +31,23 @@ Vagrant.configure(2) do |config|
     idm1.vm.box = "fedora/23-cloud-base"
     idm1.vm.box_check_update = true
     idm1.vm.hostname = "idm-1.goern.example.com"
+#    idm1.vm.network "private_network", ip: "192.168.1.33"
 
     # a la https://stackoverflow.com/questions/33117939/vagrant-do-not-map-hostname-to-loopback-address-in-etc-hosts
     config.vm.provision "shell", inline: "hostname --fqdn > /etc/hostname && hostname -F /etc/hostname"
     config.vm.provision "shell", inline: "sed -ri 's/127\.0\.0\.1\s.*/127.0.0.1 localhost localhost.localdomain/' /etc/hosts"
 
-    idm1.vm.provision "shell", inline: "sudo dnf install -y freeipa-server freeipa-server-dns bind bind-dyndb-ldap"
-    idm1.vm.provision "shell", inline: "ipa-server-install -U -p foobarfoo -a foobarfoo -n idm-1.goern.example.com -r GOERN.EXAMPLE.COM --setup-dns --no-forwarders"
-    idm1.vm.provision "shell", inline: "printf 'foobarfoo\nfoobarfoo\nfoobarfoo\n' | kinit admin@GOERN.EXAMPLE.COM"
-    idm1.vm.provision "shell", inline: "sudo atomic run cockpit/ws"
+    idm1.vm.provision "shell", inline: "sudo dnf install -y atomic freeipa-server freeipa-server-dns bind bind-dyndb-ldap"
+    idm1.vm.provision "shell", inline: "sudo ipa-server-install --unattended --ds-password=foobarfoo --admin-password=foobarfoo --domain=goern.example.com --realm=GOERN.EXAMPLE.COM --setup-dns --reverse-zone=1.168.192.in-addr.arpa. --no-forwarders"
 
+    idm1.vm.provision "shell", inline: "printf 'foobarfoo\nfoobarfoo\nfoobarfoo\n' | kinit admin@GOERN.EXAMPLE.COM"
+
+#    clients.each do |atomic_host, atomic_host_ip_addr|
+#      idm1.vm.provision "shell", inline: "sudo ipa host-add --force --ip-address=#{atomic_host_ip_addr} #{atomic_host}.goern.example.com --password=happyjaja"
+#    end
+
+    # lets enable/start docker and get cockpit webservice running
+#    idm1.vm.provision "shell", inline: "sudo systemctl enable docker && sudo systemctl start docker && sudo atomic run cockpit/ws"
   end
 
   # provision and enroll Atomic Hosts
@@ -47,11 +56,12 @@ Vagrant.configure(2) do |config|
       this_atomic_host.vm.box = "fedora/23-atomic-host"
       this_atomic_host.vm.box_check_update = false
       this_atomic_host.vm.hostname = "#{atomic_host}.goern.example.com"
-      this_atomic_host.vm.network "private_network", ip: atomic_host_ip_addr
+#      this_atomic_host.vm.network "private_network", ip: atomic_host_ip_addr
 
       this_atomic_host.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 
 #      this_atomic_host.vm.provision "shell", inline: "atomic install sssd --password barbazbar"
+#      this_atomic_host.vm.provision "shell", inline: "sudo atomic host upgrade"
     end
   end
 

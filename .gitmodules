@@ -1,0 +1,3 @@
+[submodule "idm-server"]
+	path = idm-server
+	url = git@github.com:goern/idm-server.git
