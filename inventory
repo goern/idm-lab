@@ -1,0 +1,21 @@
+[idm-servers:children]
+idm-servers-fedora
+
+[idm-servers-fedora]
+idm-1.goern.example.com
+
+[atomic-hosts]
+atomic-host-1.goern.example.com
+atomic-host-2.goern.example.com
+atomic-host-3.goern.example.com
+
+# This is for kubenetes cluster on Atomic Hosts
+[etcd]
+atomic-host-1.goern.example.com
+
+[masters]
+atomic-host-1.goern.example.com
+
+[minions]
+atomic-host-2.goern.example.com
+atomic-host-3.goern.example.com
