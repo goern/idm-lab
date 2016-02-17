@@ -1,3 +1,9 @@
 [submodule "idm-server"]
 	path = idm-server
 	url = git@github.com:goern/idm-server.git
+[submodule "openshift-ansible"]
+	path = openshift-ansible
+	url = https://github.com/openshift/openshift-ansible.git
+[submodule "kubernetes-ansible"]
+	path = kubernetes-ansible
+	url = https://github.com/eparis/kubernetes-ansible.git
