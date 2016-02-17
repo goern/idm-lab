@@ -1,11 +1,12 @@
-= Demo: Identity Managment with Atomic Hosts
+= Lab Session: Identity Managment with Atomic Hosts
 Christoph Görn <goern@redhat.com>
 0.1.0, 2016-02-12
 
 == Prerequisites
 
-This demo requires https://vagrantup.com/[Vagrant] and libvirt to be installed. The Vagrant plugin
-https://github.com/smdahlen/vagrant-hostmanager[hostmanager] must be installed too.
+This demo requires https://vagrantup.com/[Vagrant] and libvirt to be installed. The Vagrant plugins
+https://github.com/smdahlen/vagrant-hostmanager[hostmanager] and https://github.com/aidanns/vagrant-reload
+[reload] must be installed too.
 
 WARNING: initial provisioning of the IdM server will install a significant
 amount of RPM, a little bit of time is required.
@@ -49,7 +50,7 @@ c. OpenShift Origin web console
 The first step is to provision the IdM service. Using
 
 [source,bash]
-vagrant up idm-1
+sudo vagrant up idm-1
 
 you can create and provision a freeIPA server, based on Fedora 23. It will provide a
 web user interface.
@@ -75,10 +76,20 @@ these hosts.
 After using
 
 [source,bash]
-vagrant up --no-parallel atomic-host-{1,2,3}
+sudo vagrant up --no-parallel atomic-host-{1,2,3}
 
 three Atomic Hosts are ready to use.
 
-TIP: If you want to upgrade them to the most current version of Fedora 23
-Atomic Host, use `sudo atomic host upgrade`, this will pull down the latest
-bits for you.
+One of the provision scripts inside the Vagrantfile will do a `atomic host upgrade`,
+this will need some minutes to fetch data from the internet. After the upgrade
+Kubernetes 1.1 will be available. This is required to implement a DaemonSet.
+
+And as another step an ansible provisioner will configure all three Atomic
+Hosts to form one Kubernetes cluster: atomic-host-1 being the master (incl. etcd)
+and atomic-host-{2,3} are the nodes.
+
+To verify provisioning of the Kubernetes cluster, log on to atomic-host-1
+and get a list of nodes:
+
+[source, bash]
+sudo kubectl get nodes

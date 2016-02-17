@@ -14,6 +14,11 @@ Vagrant.configure(2) do |config|
     raise 'vagrant-hostmanager is not installed! see https://github.com/smdahlen/vagrant-hostmanager'
   end
 
+  # check if the reload plugin is installed
+  unless Vagrant.has_plugin?("vagrant-reload")
+    raise 'vagrant-reload is not installed! see https://github.com/aidanns/vagrant-reload'
+  end
+
   # and configure the hostmanager plugin
   config.hostmanager.enabled = true
   config.hostmanager.manage_host = true
@@ -54,17 +59,29 @@ Vagrant.configure(2) do |config|
 
       this_atomic_host.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 
-      this_atomic_host.vm.provision "shell", inline: "sudo atomic host upgrade && (sudo reboot || true)"
+      this_atomic_host.vm.provision "shell", inline: "sudo atomic host upgrade"
+      this_atomic_host.vm.provision :reload  # FIXME this should trigger a reboot
+
+      if this_atomic_host.vm.hostname == 'atomic-host-3.goern.example.com'
+        config.vm.provision "ansible" do |ansible|
+          ansible.playbook = "./kubernetes-ansible/setup.yml"
+          ansible.inventory_path = "./inventory"
+          ansible.limit = 'all'
+        end
+      end
     end
   end
 
   # provision an OpenShift Origin host, basically recycled from https://www.openshift.org/vm/
-  config.vm.define "openshift-origin-1" do |oso1|
-    oso1.vm.box = 'projectatomic/adb'
+  # FIXME there is no Atomic Enterprise Platform for CentOS
+  config.vm.define "oso-1" do |oso1|
+    oso1.vm.box = 'centos/7'
     oso1.vm.box_check_update = true
     oso1.vm.hostname = "oso-1.goern.example.com"
 
-    oso1.vm.synced_folder ".", "/vagrant", disabled: true
+    config.vm.provision "shell", inline: "sed -ri 's/127\.0\.0\.1\s.*/127.0.0.1 localhost localhost.localdomain/' /etc/hosts"
+
+    oso1.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
   end
 
 end
