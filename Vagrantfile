@@ -37,17 +37,17 @@ Vagrant.configure(2) do |config|
     idm1.vm.box_check_update = true
     idm1.vm.hostname = "idm-1.goern.example.com"
 
-    # a la https://stackoverflow.com/questions/33117939/vagrant-do-not-map-hostname-to-loopback-address-in-etc-hosts
-    config.vm.provision "shell", inline: "hostname --fqdn > /etc/hostname && hostname -F /etc/hostname"
-    config.vm.provision "shell", inline: "sed -ri 's/127\.0\.0\.1\s.*/127.0.0.1 localhost localhost.localdomain/' /etc/hosts"
+    idm1.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 
-    idm1.vm.provision "shell", inline: "sudo dnf install -y atomic freeipa-server freeipa-server-dns bind bind-dyndb-ldap"
+    idm1.vm.provision "shell", path: "provision-scripts/common.sh"
+
+    idm1.vm.provision "shell", inline: "sudo dnf install -y freeipa-server freeipa-server-dns bind bind-dyndb-ldap"
     idm1.vm.provision "shell", inline: "sudo ipa-server-install --unattended --ds-password=foobarfoo --admin-password=foobarfoo --domain=goern.example.com --realm=GOERN.EXAMPLE.COM --setup-dns --reverse-zone=1.168.192.in-addr.arpa. --no-forwarders"
 
     idm1.vm.provision "shell", inline: "printf 'foobarfoo\nfoobarfoo\nfoobarfoo\n' | kinit admin@GOERN.EXAMPLE.COM"
 
-    # lets enable/start docker and get cockpit webservice running
-    idm1.vm.provision "shell", inline: "sudo systemctl enable docker && sudo systemctl start docker && sudo atomic run cockpit/ws"
+    idm1.vm.provision "shell", inline: "atomic run cockpit/ws"
+
   end
 
   # provision and enroll Atomic Hosts
@@ -78,8 +78,6 @@ Vagrant.configure(2) do |config|
     oso1.vm.box = 'centos/7'
     oso1.vm.box_check_update = true
     oso1.vm.hostname = "oso-1.goern.example.com"
-
-    config.vm.provision "shell", inline: "sed -ri 's/127\.0\.0\.1\s.*/127.0.0.1 localhost localhost.localdomain/' /etc/hosts"
 
     oso1.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
   end
