@@ -19,6 +19,10 @@ Vagrant.configure(2) do |config|
     raise 'vagrant-reload is not installed! see https://github.com/aidanns/vagrant-reload'
   end
 
+  if Vagrant.has_plugin?('vagrant-registration')
+    config.registration.skip = true
+  end
+
   # and configure the hostmanager plugin
   config.hostmanager.enabled = true
   config.hostmanager.manage_host = true
@@ -53,7 +57,7 @@ Vagrant.configure(2) do |config|
   # provision and enroll Atomic Hosts
   clients.each do |atomic_host, atomic_host_ip_addr|
     config.vm.define atomic_host do |this_atomic_host|
-      this_atomic_host.vm.box = "fedora/23-atomic-host"
+      this_atomic_host.vm.box = "centos/atomic-host"
       this_atomic_host.vm.box_check_update = false
       this_atomic_host.vm.hostname = "#{atomic_host}.goern.example.com"
 
